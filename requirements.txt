@@ -1,0 +1,7 @@
+scapy 
+pcapy 
+Flask 
+joblib 
+numpy 
+plotly 
+pandas

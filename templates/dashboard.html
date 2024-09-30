@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDS Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Intrusion Detection System Dashboard</h1>
+        <button id="simulateBtn">Simulate Traffic</button>
+        <button id="detectBtn">Start Detection</button>
+        <button id="logsBtn">View Logs</button>
+        <button id="reportBtn">Generate Report</button>
+
+        <div id="alerts-section">
+            <h2>Alerts</h2>
+            <ul id="alerts-list"></ul>
+        </div>
+
+        <div id="logs-section">
+            <h2>Intrusion Logs</h2>
+            <pre id="logs-display"></pre>
+        </div>
+
+        <div id="report-section">
+            <h2>Daily Reports</h2>
+            <div id="report-chart"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('simulateBtn').addEventListener('click', function() {
+            fetch('/simulate_traffic', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => alert(data.status));
+        });
+
+        document.getElementById('detectBtn').addEventListener('click', function() {
+            fetch('/start_detection', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    const alertsList = document.getElementById('alerts-list');
+                    alertsList.innerHTML = '';
+                    data.forEach(alert => {
+                        const li = document.createElement('li');
+                        li.textContent = alert;
+                        alertsList.appendChild(li);
+                    });
+                });
+        });
+
+        document.getElementById('logsBtn').addEventListener('click', function() {
+            fetch('/view_logs')
+                .then(response => response.json())
+                .then(data => {
+                    const logsDisplay = document.getElementById('logs-display');
+                    logsDisplay.textContent = data.join('\n');
+                });
+        });
+
+        document.getElementById('reportBtn').addEventListener('click', function() {
+            fetch('/generate_report', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    const dates = Object.keys(data);
+                    const counts = Object.values(data);
+
+                    var trace = {
+                        x: dates,
+                        y: counts,
+                        type: 'bar'
+                    };
+                    var layout = {
+                        title: 'Intrusions Detected Per Day'
+                    };
+                    Plotly.newPlot('report-chart', [trace], layout);
+                });
+        });
+    </script>
+</body>
+</html>
